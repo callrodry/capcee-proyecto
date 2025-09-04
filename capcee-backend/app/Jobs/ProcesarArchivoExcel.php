@@ -1,67 +1,60 @@
+// app/Jobs/ProcessExcelFile.php
 <?php
 
 namespace App\Jobs;
 
-use App\Models\ArchivosProcesados;
-use App\Services\ExcelProcessor;
-use App\Events\ArchivoProcesado;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\BaseFinancieraImport;
+use Illuminate\Support\Facades\DB;
 
-class ProcesarArchivoExcel implements ShouldQueue
+class ProcessExcelFile implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $archivoId;
-    public $tries = 3;
-    public $timeout = 3600; // 1 hora para archivos grandes
+    protected $uploadId;
 
-    public function __construct($archivoId)
+    public function __construct($uploadId)
     {
-        $this->archivoId = $archivoId;
+        $this->uploadId = $uploadId;
     }
 
     public function handle()
     {
-        $archivo = ArchivosProcesados::find($this->archivoId);
+        $upload = DB::table('file_uploads')->where('id', $this->uploadId)->first();
         
-        if (!$archivo) {
-            Log::error("Archivo no encontrado: {$this->archivoId}");
+        if (!$upload) {
             return;
         }
 
-        Log::info("Iniciando procesamiento de archivo: {$archivo->nombre_archivo}");
+        try {
+            DB::table('file_uploads')
+                ->where('id', $this->uploadId)
+                ->update(['status' => 'EN_PROCESO']);
 
-        $processor = new ExcelProcessor($archivo);
-        $resultado = $processor->procesar();
+            Excel::import(
+                new BaseFinancieraImport,
+                storage_path('app/' . $upload->ruta_archivo)
+            );
 
-        // Emitir evento para notificaciones en tiempo real
-        event(new ArchivoProcesado($archivo, $resultado));
+            DB::table('file_uploads')
+                ->where('id', $this->uploadId)
+                ->update([
+                    'status' => 'CONVERTIDO',
+                    'procesado_en' => now()
+                ]);
 
-        Log::info("Procesamiento completado para archivo: {$archivo->nombre_archivo}", [
-            'exitoso' => $resultado,
-            'registros_procesados' => $archivo->registros_totales,
-            'registros_exitosos' => $archivo->registros_exitosos
-        ]);
-    }
-
-    public function failed(\Throwable $exception)
-    {
-        $archivo = ArchivosProcesados::find($this->archivoId);
-        
-        if ($archivo) {
-            $archivo->cambiarEstado(ArchivosProcesados::ESTADO_ERROR);
-            $archivo->errores = json_encode(['Error fatal: ' . $exception->getMessage()]);
-            $archivo->save();
+        } catch (\Exception $e) {
+            DB::table('file_uploads')
+                ->where('id', $this->uploadId)
+                ->update([
+                    'status' => 'ERROR',
+                    'error_mensaje' => $e->getMessage()
+                ]);
         }
-
-        Log::error("Job fallido para archivo: {$this->archivoId}", [
-            'error' => $exception->getMessage(),
-            'trace' => $exception->getTraceAsString()
-        ]);
     }
 }

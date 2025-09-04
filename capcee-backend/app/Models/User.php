@@ -43,13 +43,15 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function departamento(){
-        return $this->belongsTo(departamento::class, 'departamento_id');
+    // ✅ CORRECCIÓN 1: Department con D mayúscula
+    public function departamento()
+    {
+        return $this->belongsTo(Department::class, 'departamento_id');
     }
 
-    public function setPasswordAttribute($value)
-{
-    $this->attributes['password'] = bcrypt($value);
-}
-
+    // ❌ ELIMINAR O COMENTAR ESTO - ESTÁ CAUSANDO DOBLE HASH
+    // public function setPasswordAttribute($value)
+    // {
+    //     $this->attributes['password'] = bcrypt($value);
+    // }
 }

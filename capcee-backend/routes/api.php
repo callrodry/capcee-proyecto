@@ -24,6 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('archivos')->group(function () {
         Route::get('/', [ArchivoController::class, 'index']);
         Route::post('/upload', [ArchivoController::class, 'upload']);
+        Route::post('/upload/excel', [ExcelUploadController::class, 'upload']);
+        Route::get('/upload/status/{id}', [ExcelUploadController::class, 'status']);
         Route::get('/{id}', [ArchivoController::class, 'show']);
         Route::get('/{id}/estado', [ArchivoController::class, 'estado']);
         Route::get('/{id}/preview', [ArchivoController::class, 'preview']);
