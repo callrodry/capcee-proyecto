@@ -1,9 +1,10 @@
 <?php
+// database/seeders/DepartmentSeeder.php
 
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Department;
+use Illuminate\Support\Facades\DB;
 
 class DepartmentSeeder extends Seeder
 {
@@ -12,32 +13,60 @@ class DepartmentSeeder extends Seeder
         $departments = [
             [
                 'code' => 'CAPCEE',
-                'nombre' => 'Comité Administrador Poblano para la Construcción de Espacios Educativos',
-                'descripcion' => 'Departamento principal de control de obras educativas',
+                'nombre' => 'CAPCEE Principal',
+                'descripcion' => 'Departamento principal de Control y Administración Presupuestal',
                 'limite_archivo_diario' => 100,
-                'tamano_archivo_maximo_mb' => 50
-            ],
-            [
-                'code' => 'CONTAB',
-                'nombre' => 'Contabilidad y Control Presupuestal',
-                'descripcion' => 'Área de control financiero y presupuestal',
-                'limite_archivo_diario' => 50,
-                'tamano_archivo_maximo_mb' => 30
+                'tamano_archivo_maximo_mb' => 50,
+                'esta_activo' => true,
+                'created_at' => now(),
+                'updated_at' => now()
             ],
             [
                 'code' => 'OBRAS',
-                'nombre' => 'Dirección de Obras',
-                'descripcion' => 'Supervisión y control de obras',
-                'limite_archivo_diario' => 75,
-                'tamano_archivo_maximo_mb' => 40
+                'nombre' => 'Departamento de Obras',
+                'descripcion' => 'Gestión de obras y construcciones',
+                'limite_archivo_diario' => 100,
+                'tamano_archivo_maximo_mb' => 50,
+                'esta_activo' => true,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'code' => 'PAGOS',
+                'nombre' => 'Departamento de Pagos',
+                'descripcion' => 'Control de pagos y transferencias',
+                'limite_archivo_diario' => 100,
+                'tamano_archivo_maximo_mb' => 50,
+                'esta_activo' => true,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'code' => 'BANORTE',
+                'nombre' => 'Banorte',
+                'descripcion' => 'Pagos y transferencias Banorte',
+                'limite_archivo_diario' => 100,
+                'tamano_archivo_maximo_mb' => 50,
+                'esta_activo' => true,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'code' => 'GENERAL',
+                'nombre' => 'General',
+                'descripcion' => 'Departamento general para archivos sin clasificar',
+                'limite_archivo_diario' => 100,
+                'tamano_archivo_maximo_mb' => 50,
+                'esta_activo' => true,
+                'created_at' => now(),
+                'updated_at' => now()
             ]
         ];
 
         foreach ($departments as $dept) {
-            Department::updateOrCreate(
-                ['code' => $dept['code']],
-                $dept
-            );
+            DB::table('departments')->insertOrIgnore($dept);
         }
+
+        $this->command->info('✅ Departamentos creados exitosamente!');
     }
 }

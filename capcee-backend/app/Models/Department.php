@@ -21,44 +21,4 @@ class Department extends Model
     protected $casts = [
         'esta_activo' => 'boolean'
     ];
-
-    // Relaciones
-    public function archivos()
-    {
-        return $this->hasMany(ArchivosProcesados::class, 'departamento_id');
-    }
-
-    public function usuarios()
-    {
-        return $this->belongsToMany(User::class, 'usuario_departamentos');
-    }
-
-    public function asignacionesCampos()
-    {
-        return $this->hasMany(AsignacionesCampos::class, 'codigo_departamento', 'code');
-    }
-
-    // Scopes
-    public function scopeActivos($query)
-    {
-        return $query->where('esta_activo', true);
-    }
-
-    // Métodos auxiliares
-    public function archivosHoy()
-    {
-        return $this->archivos()
-            ->whereDate('fecha_upload', today())
-            ->count();
-    }
-
-    public function puedeSubirArchivos()
-    {
-        return $this->archivosHoy() < $this->limite_archivo_diario;
-    }
-
-    public function archivosRestantesHoy()
-    {
-        return max(0, $this->limite_archivo_diario - $this->archivosHoy());
-    }
 }

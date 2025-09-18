@@ -15,11 +15,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->unsignedBigInteger('departamento_id')->nullable(); // AGREGAR ESTA LÍNEA
+            $table->unsignedBigInteger('departamento_id')->nullable(); // Campo para departamento
             $table->rememberToken();
             $table->timestamps();
             
-            $table->index('departamento_id'); // AGREGAR ESTA LÍNEA
+            $table->index('departamento_id');
         });
     }
 
